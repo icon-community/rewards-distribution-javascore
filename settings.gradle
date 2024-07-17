@@ -1,0 +1,2 @@
+rootProject.name = 'rewards-distribution-distribution-contract-java'
+include('contract')
