@@ -11,6 +11,9 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.List;
 
+/*
+ * This contract allows admins to add claimable ICX amounts for users.
+ */
 public class Contract
 {
     // Mapping of user addresses to their claimable ICX amounts
@@ -19,45 +22,69 @@ public class Contract
     private static final IterableDictDB<Address, BigInteger> claims = new IterableDictDB<>(CLAIMS, BigInteger.class, Address.class, false);
     private final ArrayDB<Address> admins = Context.newArrayDB(ADMINS, Address.class);
 
+    /*
+     * Constructor that adds the contract owner as an admin.
+     */
     public Contract() {
         // Add the contract owner as an admin
+        Address ownerAddress = Context.getOwner();
+        int size = this.admins.size();
+        for (int i = 0; i < size; i++) {
+            String adminAddress = this.admins.get(i).toString();
+            if (adminAddress.equals(ownerAddress.toString())) {
+                return;
+            }
+        }
         this.admins.add(Context.getOwner());
         AdminAdded(Context.getOwner());
     }
 
-    // @External
-    // public void addAdmin(Address admin) {
-    //     // Ensure only the owner can add admins
-    //     Address caller = Context.getCaller();
-    //     if (caller.equals(Context.getOwner())) {
-    //     // Add the admin
-    //       this.admins.add(admin);
-    //       AdminAdded(admin);
-    //     } else {
-    //         Context.revert("Only the contract owner can add admins");
-    //     }
+    /*
+     * Add an admin to the contract.
+     */
+    @External
+    public void addAdmin(Address admin) {
+        // Ensure only the owner can add admins
+        Address caller = Context.getCaller();
 
-    // }
+        if (caller.equals(Context.getOwner())) {
+            // check if the admin is already added
+            int size = this.admins.size();
+            for (int i = 0; i < size; i++) {
+                String adminAddress = this.admins.get(i).toString();
+                if (adminAddress.equals(admin.toString())) {
+                    Context.revert("Admin already added");
+                }
+            }
+            // Add the admin
+            this.admins.add(admin);
+            AdminAdded(admin);
+        } else {
+            Context.revert("Only the contract owner can add admins");
+        }
+    }
 
+    /*
+     * Return the list of admins.
+     */
     @External(readonly=true)
     public List<Address> getAdmins() {
         int size = this.admins.size();
-        System.out.println("Size: " + size);
         Address [] adminArray = new Address[size];
         for (int i = 0; i < size; i++) {
-            System.out.println("i: " + i);
-            System.out.println("Admin: " + this.admins.get(i));
             adminArray[i] = this.admins.get(i);
         }
         return List.of(adminArray);
     }
 
-    // Add claimable ICX for a user
+    /*
+     * Add a claimable ICX amount for a user.
+     */
     @External
     public void addClaim(Address user, BigInteger amount) {
         // Ensure only admins can add claims
-        // Contract contractInstance = new Contract();
-        // onlyAdmins(contractInstance);
+        Contract contractInstance = new Contract();
+        onlyAdmins(contractInstance);
 
         // Update the claimable amount for the user
         BigInteger currentAmount = claims.getOrDefault(user, BigInteger.ZERO);
@@ -65,7 +92,9 @@ public class Contract
         ClaimAdded(user, amount);
     }
 
-    // Allow users to claim their ICX
+    /*
+     * Claim the ICX amount for the caller.
+     */
     @External
     public void claim() {
         Address user = Context.getCaller();
@@ -86,12 +115,14 @@ public class Contract
         Claimed(user, claimAmount);
     }
 
-    // Allow owner to claim ICX from contract
+    /*
+     * Claim the ICX amount by an admin.
+     */
     @External
     public void adminClaim(BigInteger amount) {
         // Ensure only admins can claim ICX
-        // Contract contractInstance = new Contract();
-        // onlyAdmins(contractInstance);
+        Contract contractInstance = new Contract();
+        onlyAdmins(contractInstance);
 
         Address caller = Context.getCaller();
 
@@ -102,41 +133,58 @@ public class Contract
         OwnerClaimed(caller, amount);
     }
 
-    // public static void onlyAdmins(Contract contractInstance) {
-    //     Address caller = Context.getCaller();
-    //     Boolean isAdmin = false;
-    //     int size = contractInstance.admins.size();
-    //     for (int i = 0; i < size; i++) {
-    //         if (caller.equals(contractInstance.admins.get(i))) {
-    //             isAdmin = true;
-    //             break;
-    //         }
-    //     }
+    public static void onlyAdmins(Contract contractInstance) {
+        Address caller = Context.getCaller();
+        Boolean isAdmin = false;
+        int size = contractInstance.admins.size();
+        for (int i = 0; i < size; i++) {
+            if (caller.equals(contractInstance.admins.get(i))) {
+                isAdmin = true;
+                break;
+            }
+        }
 
-    //     if (isAdmin == false) {
-    //         Context.revert("Only contract admins can execute this function");
-    //     }
-    // }
+        if (isAdmin == false) {
+            Context.revert("Only contract admins can execute this function");
+        }
+    }
 
-    // Get the claimable ICX amount for a user
+    /*
+     * Return the claimable ICX amount for a user.
+     */
     @External(readonly=true)
     public BigInteger getClaimableAmount(Address user) {
         return claims.getOrDefault(user, BigInteger.ZERO);
     }
 
+    /*
+     * Fallback function to allow the contract to receive ICX.
+     */
     @Payable
     public void fallback() {
     }
 
-    @EventLog(indexed=2)
+    /*
+     * Event emitted when an admin is added.
+     */
+    @EventLog(indexed=1)
     public void AdminAdded(Address admin) {}
 
+    /*
+     * Event emitted when a claim is added.
+     */
     @EventLog(indexed=2)
     public void ClaimAdded(Address user, BigInteger amount) {}
 
+    /*
+     * Event emitted when a claim is made by a user.
+     */
     @EventLog(indexed=2)
     public void Claimed(Address user, BigInteger amount) {}
 
+    /*
+     * Event emitted when a claim is made by an admin.
+     */
     @EventLog(indexed=2)
     public void OwnerClaimed(Address owner, BigInteger amount) {}
 }

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ContractTest extends TestBase {
@@ -91,29 +92,30 @@ class ContractTest extends TestBase {
         assertEquals(claimAmount, ownerBalance);
     }
 
-    // @Test
-    // void testAdminClaimByNewAdmin() {
-    //     // Add claim amount to contract for account
-    //     BigInteger claimAmount = BigInteger.valueOf(1000);
+    @Test
+    void testAdminClaimByNewAdmin() {
+        // Add claim amount to contract for account
+        BigInteger claimAmount = BigInteger.valueOf(1000);
         
-    //     // create new admin account
-    //     contractInstance.invoke(owner, "addAdmin", accountInstance3.getAddress());
+        // create new admin account
+        contractInstance.invoke(owner, "addAdmin", accountInstance3.getAddress());
 
-    //     // Admin claim the amount
-    //     contractInstance.invoke(accountInstance3, "adminClaim", claimAmount);
+        // Admin claim the amount
+        contractInstance.invoke(accountInstance3, "adminClaim", claimAmount);
 
-    //     BigInteger accountBalance = accountInstance3.getBalance();
-    //     // Check account balance return to 1000
-    //     assertEquals(claimAmount, accountBalance);
-    // }
+        BigInteger accountBalance = accountInstance3.getBalance();
+        // Check account balance return to 1000
+        assertEquals(claimAmount, accountBalance);
+    }
     
     @Test
     void testGetAdmins() {
         
         List admins = (List) contractInstance.call("getAdmins");
-        System.out.println("admins"+ admins.size());
+        int size = admins.size();
+        System.out.println("admins size: " + size);
+        System.out.println("admins: "+ admins);
 
-        // Check account balance return to 1000
-        // assertEquals(claimAmount, accountBalance);
+        assertTrue(size > 0,"List of admins should be higher than zero");
     }
 }
