@@ -218,11 +218,29 @@ This script deploys the contract to the ICON network. The contract owner is the 
 ```bash
 npm run deploy
 ```
+If there are errors running the deploy script, check that a valida private key wallet with enough funds is defined in the `.env` file as well as the correct network.
+
+You can also locally compile the contracts by running the following command inside the `./smart-contract` folder.
+
+```bash
+./gradlew clean build optimizedJar
+```
+
+A Makefile is also provided to compile the contracts.
+
+You need to have gradle installed in your system to compile the contracts.
 
 ### Fund contract
 You can fund the contract directly with your wallet by sending ICX to the contract address, or you can use the following script to fund the contract.
 
 ```bash
+npm run fund-contract
+```
+
+Before running the command you need to update the `FUND_AMOUNT` variable in the `fund-contract.js` file located in the `./scripts` folder at the root of the project.
+
+```javascript
+const FUND_AMOUNT = "100"; // 100 ICX
 ```
 
 ### add user rewards
