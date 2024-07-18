@@ -64,3 +64,10 @@ Desktop.ini
 
 # Linux
 *~
+
+# js
+node_modules/
+npm-debug.log
+.env
+.env*
+*.swp

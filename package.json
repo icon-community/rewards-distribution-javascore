@@ -1,0 +1,12 @@
+{
+  "name": "rewards-distribution-javascore",
+  "version": "1.0.0",
+  "description": "This repository contains the code for the rewards distribution smart contract (source code) and the scripts for deploying the contract.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "fidelve",
+  "license": "ISC"
+}
