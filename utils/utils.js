@@ -65,6 +65,64 @@ async function getTxResult(txHash) {
   }
 }
 
+async function sendIcx(to, amount, wallet = WALLET) {
+  try {
+    const txObj = new IconBuilder.IcxTransactionBuilder()
+      .from(wallet.getAddress())
+      .to(to)
+      .value(IconConverter.toHex(amount * 10 ** 18))
+      .stepLimit(IconConverter.toHex(1000000))
+      .nid(config.default.nid)
+      .nonce(IconConverter.toHex(1))
+      .version(IconConverter.toHex(3))
+      .timestamp(new Date().getTime() * 1000)
+      .build();
+
+    const signedTransaction = new SignedTransaction(txObj, wallet);
+    const txHash = await iconService
+      .sendTransaction(signedTransaction)
+      .execute();
+    return txHash;
+  } catch (err) {
+    const str = "Error sending ICX";
+    console.log(str);
+    console.log(err);
+    throw new Error(str);
+  }
+}
+
+async function addClaim(claim, wallet = WALLET) {
+  try {
+    const { address, amount } = claim;
+    const parsedAmount = Number(amount) * 10 ** 18;
+    const txObj = new IconBuilder.CallTransactionBuilder()
+      .from(wallet.getAddress())
+      .to(config.contract.address)
+      .stepLimit(IconConverter.toHex(10000000000))
+      .nid(config.default.nid)
+      .nonce(IconConverter.toHex(1))
+      .version(IconConverter.toHex(3))
+      .timestamp(new Date().getTime() * 1000)
+      .method("addClaim")
+      .params({
+        user: address,
+        amount: IconConverter.toHex(parsedAmount),
+      })
+      .build();
+
+    const signedTransaction = new SignedTransaction(txObj, wallet);
+    const txHash = await iconService
+      .sendTransaction(signedTransaction)
+      .execute();
+    return txHash;
+  } catch (err) {
+    const str = "Error adding claims";
+    console.log(str);
+    console.log(err);
+    throw new Error(str);
+  }
+}
+
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -73,4 +131,6 @@ module.exports = {
   deployContract,
   sleep,
   getTxResult,
+  sendIcx,
+  addClaim,
 };

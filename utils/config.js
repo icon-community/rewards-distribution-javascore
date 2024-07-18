@@ -15,6 +15,7 @@ const config = {
   },
   contract: {
     path: "", // path to the smart contract
+    address: process.env.CONTRACT_ADDRESS,
   },
 };
 

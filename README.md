@@ -237,10 +237,16 @@ You can fund the contract directly with your wallet by sending ICX to the contra
 npm run fund-contract
 ```
 
-Before running the command you need to update the `FUND_AMOUNT` variable in the `fund-contract.js` file located in the `./scripts` folder at the root of the project.
+Before running the command you need to update the `FUND_AMOUNT` variable in the `fund-contract.js` file located in the `./scripts` folder at the root of the project, and add the contract address in the `CONTRACT_ADDRESS` variable of the `.env` file.
 
 ```javascript
+// inside the fund-contract.js file
 const FUND_AMOUNT = "100"; // 100 ICX
+```
+
+```bash
+# inside the .env file
+CONTRACT_ADDRESS="CONTRACT_ADDRESS";
 ```
 
 ### add user rewards

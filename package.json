@@ -4,7 +4,9 @@
   "description": "This repository contains the code for the rewards distribution smart contract (source code) and the scripts for deploying the contract.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deploy": "node scripts/deploy.js",
+    "fund-contract": "node scripts/fund-contract.js",
+    "add-rewards": "node scripts/add-rewards.js"
   },
   "keywords": [],
   "author": "fidelve",
