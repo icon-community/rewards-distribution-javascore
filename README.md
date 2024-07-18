@@ -209,6 +209,7 @@ Create a `.env` file in the root of the project with the following content:
 ```bash
 PRIVATE_KEY="YOUR_PRIVATE_KEY"
 NETWORK="mainnet" # or "lisbon"
+CONTRACT_ADDRESS="CONTRACT_ADDRESS" # defined after deploying the contract
 ```
 A wallet with enough funds is required to deploy the contract. And once the contract is deployed you can fund the contract by sending ICX to the contract address.
 
@@ -218,7 +219,7 @@ This script deploys the contract to the ICON network. The contract owner is the 
 ```bash
 npm run deploy
 ```
-If there are errors running the deploy script, check that a valida private key wallet with enough funds is defined in the `.env` file as well as the correct network.
+If there are errors running the deploy script, check that a valid private key wallet with enough funds is defined in the `.env` file as well as the correct network.
 
 You can also locally compile the contracts by running the following command inside the `./smart-contract` folder.
 
@@ -246,7 +247,7 @@ const FUND_AMOUNT = "100"; // 100 ICX
 
 ```bash
 # inside the .env file
-CONTRACT_ADDRESS="CONTRACT_ADDRESS";
+CONTRACT_ADDRESS="CONTRACT_ADDRESS"
 ```
 
 ### add user rewards
