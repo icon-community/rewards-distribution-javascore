@@ -80,6 +80,9 @@ class ContractTest extends TestBase {
 
     @Test
     void testAdminClaimByOwner() {
+        // Balance before claim
+        BigInteger ownerBalancePre = owner.getBalance();
+
         // Add claim amount to contract for account
         BigInteger claimAmount = BigInteger.valueOf(1000);
 
@@ -88,12 +91,19 @@ class ContractTest extends TestBase {
 
         BigInteger ownerBalance = owner.getBalance();
 
-        // Check owner balance return to 1000
-        assertEquals(claimAmount, ownerBalance);
+        // balance after claim
+        BigInteger ownerBalancePost = owner.getBalance();
+        
+        // Check account balance return to 1000
+        assertEquals(claimAmount, ownerBalancePost.subtract(ownerBalancePre));
     }
 
     @Test
     void testAdminClaimByNewAdmin() {
+
+        // Balance before claim
+        BigInteger ownerBalancePre = owner.getBalance();
+
         // Add claim amount to contract for account
         BigInteger claimAmount = BigInteger.valueOf(1000);
         
@@ -103,9 +113,11 @@ class ContractTest extends TestBase {
         // Admin claim the amount
         contractInstance.invoke(accountInstance3, "adminClaim", claimAmount);
 
-        BigInteger accountBalance = accountInstance3.getBalance();
+        // balance after claim
+        BigInteger ownerBalancePost = owner.getBalance();
+        
         // Check account balance return to 1000
-        assertEquals(claimAmount, accountBalance);
+        assertEquals(claimAmount, ownerBalancePost.subtract(ownerBalancePre));
     }
     
     @Test
@@ -113,8 +125,8 @@ class ContractTest extends TestBase {
         
         List admins = (List) contractInstance.call("getAdmins");
         int size = admins.size();
-        System.out.println("admins size: " + size);
-        System.out.println("admins: "+ admins);
+        // System.out.println("admins size: " + size);
+        // System.out.println("admins: "+ admins);
 
         assertTrue(size > 0,"List of admins should be higher than zero");
     }

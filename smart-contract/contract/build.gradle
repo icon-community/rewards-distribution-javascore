@@ -12,40 +12,40 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 }
 
-optimizedJar {
-    mainClassName = 'contract.Contract'
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    def runtimeClasspathFiles = configurations.runtimeClasspath.collect { it }
-    println "Runtime classpath files: ${runtimeClasspathFiles}"
-
-    if (runtimeClasspathFiles.size() > 0) {
-        from {
-            runtimeClasspathFiles.collect {
-                if (it.isDirectory()) {
-                    it
-                } else {
-                    zipTree(it)
-                }
-            }
-        }
-    } else {
-        println "Warning: runtimeClasspath is empty"
-    }
-
-    archivesBaseName = 'contract'
-    enableDebug = true
-}
-
-
 // optimizedJar {
 //     mainClassName = 'contract.Contract'
 //     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-//     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-//     archivesBaseName = 'contract'
 
-//     enableDebug = true
+//     def runtimeClasspathFiles = configurations.runtimeClasspath.collect { it }
+//     println "Runtime classpath files: ${runtimeClasspathFiles}"
+
+//     if (runtimeClasspathFiles.size() > 0) {
+//         from {
+//             runtimeClasspathFiles.collect {
+//                 if (it.isDirectory()) {
+//                     it
+//                 } else {
+//                     zipTree(it)
+//                 }
+//             }
+//         }
+//     } else {
+//         println "Warning: runtimeClasspath is empty"
+//     }
+
+//     archivesBaseName = 'contract'
+//     // enableDebug = true
 // }
+
+
+optimizedJar {
+    mainClassName = 'contract.Contract'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    archivesBaseName = 'contract'
+
+    // enableDebug = true
+}
 
 test {
     useJUnitPlatform()

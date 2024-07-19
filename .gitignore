@@ -71,3 +71,13 @@ npm-debug.log
 .env
 .env*
 *.swp
+
+# track the compiled contract files
+!smart-contract/contract/build/
+!smart-contract/contract/build/libs/
+!smart-contract/contract/build/libs/**
+smart-contract/contract/build/classes
+smart-contract/contract/build/generated
+smart-contract/contract/build/reports
+smart-contract/contract/build/test-results
+smart-contract/contract/build/tmp

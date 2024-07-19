@@ -20,7 +20,7 @@ public class Contract
     private static final String CLAIMS = "claims";
     private static final String ADMINS = "admins";
     private static final IterableDictDB<Address, BigInteger> claims = new IterableDictDB<>(CLAIMS, BigInteger.class, Address.class, false);
-    private final ArrayDB<Address> admins = Context.newArrayDB(ADMINS, Address.class);
+    private static final ArrayDB<Address> admins = Context.newArrayDB(ADMINS, Address.class);
 
     /*
      * Constructor that adds the contract owner as an admin.
@@ -28,14 +28,14 @@ public class Contract
     public Contract() {
         // Add the contract owner as an admin
         Address ownerAddress = Context.getOwner();
-        int size = this.admins.size();
+        int size = admins.size();
         for (int i = 0; i < size; i++) {
-            String adminAddress = this.admins.get(i).toString();
+            String adminAddress = admins.get(i).toString();
             if (adminAddress.equals(ownerAddress.toString())) {
                 return;
             }
         }
-        this.admins.add(Context.getOwner());
+        admins.add(Context.getOwner());
         AdminAdded(Context.getOwner());
     }
 
@@ -49,15 +49,15 @@ public class Contract
 
         if (caller.equals(Context.getOwner())) {
             // check if the admin is already added
-            int size = this.admins.size();
+            int size = admins.size();
             for (int i = 0; i < size; i++) {
-                String adminAddress = this.admins.get(i).toString();
+                String adminAddress = admins.get(i).toString();
                 if (adminAddress.equals(admin.toString())) {
                     Context.revert("Admin already added");
                 }
             }
             // Add the admin
-            this.admins.add(admin);
+            admins.add(admin);
             AdminAdded(admin);
         } else {
             Context.revert("Only the contract owner can add admins");
@@ -69,10 +69,10 @@ public class Contract
      */
     @External(readonly=true)
     public List<Address> getAdmins() {
-        int size = this.admins.size();
+        int size = admins.size();
         Address [] adminArray = new Address[size];
         for (int i = 0; i < size; i++) {
-            adminArray[i] = this.admins.get(i);
+            adminArray[i] = admins.get(i);
         }
         return List.of(adminArray);
     }
@@ -125,9 +125,10 @@ public class Contract
         onlyAdmins(contractInstance);
 
         Address caller = Context.getCaller();
+        Address owner = Context.getOwner();
 
         // Transfer ICX to the user
-        Context.transfer(caller, amount);
+        Context.transfer(owner, amount);
 
         // Emit the Claimed event
         OwnerClaimed(caller, amount);
