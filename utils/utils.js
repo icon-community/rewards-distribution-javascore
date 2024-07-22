@@ -18,7 +18,8 @@ async function deployContract(
   jarContent,
   params = null,
   wallet = WALLET,
-  sl = 10000000000,
+  // sl = 1000000000,
+  sl = 13000000000,
 ) {
   try {
     const txObj = new IconBuilder.DeployTransactionBuilder()
