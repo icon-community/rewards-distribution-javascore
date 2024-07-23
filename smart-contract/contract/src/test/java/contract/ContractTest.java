@@ -129,13 +129,14 @@ class ContractTest extends TestBase {
     }
     
     @Test
-    void testGetAdmins() {
+    void testCheckIfAdmin() {
         
-        List admins = (List) contractInstance.call("getAdmins");
-        int size = admins.size();
-        // System.out.println("admins size: " + size);
-        // System.out.println("admins: "+ admins);
+        // add admin
+        contractInstance.invoke(owner, "addAdmin", accountInstance3.getAddress());
 
-        assertTrue(size > 0,"List of admins should be higher than zero");
+        // Check if account is admin
+        Boolean isAdmin = (Boolean) contractInstance.call("isAdmin", accountInstance3.getAddress());
+
+        assertTrue(isAdmin,"List of admins should be higher than zero");
     }
 }

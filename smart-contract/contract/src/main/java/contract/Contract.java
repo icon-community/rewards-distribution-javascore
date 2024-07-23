@@ -2,7 +2,7 @@ package contract;
 
 import score.Address;
 import score.Context;
-import score.ArrayDB;
+import score.DictDB;
 import score.annotation.External;
 import score.annotation.Payable;
 import score.annotation.EventLog;
@@ -20,7 +20,7 @@ public class Contract
     private static final String CLAIMS = "claims";
     private static final String ADMINS = "admins";
     private static final IterableDictDB<Address, BigInteger> claims = new IterableDictDB<>(CLAIMS, BigInteger.class, Address.class, false);
-    private static final ArrayDB<Address> admins = Context.newArrayDB(ADMINS, Address.class);
+    private static final DictDB<Address, Boolean> admins = Context.newDictDB(ADMINS, Boolean.class);
 
     /*
      * Constructor that adds the contract owner as an admin.
@@ -28,15 +28,17 @@ public class Contract
     public Contract() {
         // Add the contract owner as an admin
         Address ownerAddress = Context.getOwner();
-        int size = admins.size();
-        for (int i = 0; i < size; i++) {
-            String adminAddress = admins.get(i).toString();
-            if (adminAddress.equals(ownerAddress.toString())) {
-                return;
-            }
+
+        // check if the admin is already added
+        if (admins.getOrDefault(ownerAddress, false)) {
+            return;
         }
-        admins.add(Context.getOwner());
-        AdminAdded(Context.getOwner());
+
+        // add the owner as an admin
+        admins.set(ownerAddress, true);
+
+        // Emit the AdminAdded event
+        AdminAdded(ownerAddress);
     }
 
     /*
@@ -50,29 +52,45 @@ public class Contract
         Context.require(caller.equals(Context.getOwner()), "Only the contract owner can add admins");
 
         // check if the admin is already added
-        int size = admins.size();
-        for (int i = 0; i < size; i++) {
-            String adminAddress = admins.get(i).toString();
-            if (adminAddress.equals(admin.toString())) {
-                Context.revert("Admin already added");
-            }
+        if (admins.getOrDefault(admin, false)) {
+            return;
         }
-        // Add the admin
-        admins.add(admin);
+
+        // add new admin
+        admins.set(admin, true);
+
+        // Emit the AdminAdded event
         AdminAdded(admin);
     }
 
     /*
-     * Return the list of admins.
+     * Check if address is admin
      */
     @External(readonly=true)
-    public List<Address> getAdmins() {
-        int size = admins.size();
-        Address [] adminArray = new Address[size];
-        for (int i = 0; i < size; i++) {
-            adminArray[i] = admins.get(i);
+    public Boolean isAdmin(Address account) {
+        return admins.getOrDefault(account, false);
+    }
+
+    /*
+     * Remove an admin from the contract.
+     */
+    @External
+    public void removeAdmin(Address admin) {
+        // Ensure only the owner can remove admins
+        Address caller = Context.getCaller();
+
+        Context.require(caller.equals(Context.getOwner()), "Only the contract owner can remove admins");
+
+        // check if the admin is already added
+        if (!admins.getOrDefault(admin, false)) {
+            return;
         }
-        return List.of(adminArray);
+
+        // remove admin
+        admins.set(admin, false);
+
+        // Emit the AdminRemoved event
+        AdminRemoved(admin);
     }
 
     /*
@@ -133,19 +151,9 @@ public class Contract
     }
 
     public static void onlyAdmins(Contract contractInstance) {
-        Address caller = Context.getCaller();
-        Boolean isAdmin = false;
-        int size = contractInstance.admins.size();
-        for (int i = 0; i < size; i++) {
-            if (caller.equals(contractInstance.admins.get(i))) {
-                isAdmin = true;
-                break;
-            }
-        }
 
-        if (isAdmin == false) {
-            Context.revert("Only contract admins can execute this function");
-        }
+        Address caller = Context.getCaller();
+        Context.require(contractInstance.admins.getOrDefault(caller, false), "Only admins can execute this function");
     }
 
     /*
@@ -168,6 +176,12 @@ public class Contract
      */
     @EventLog(indexed=1)
     public void AdminAdded(Address admin) {}
+
+    /*
+     * Event emitted when an admin is Removed.
+     */
+    @EventLog(indexed=1)
+    public void AdminRemoved(Address admin) {}
 
     /*
      * Event emitted when a claim is added.
