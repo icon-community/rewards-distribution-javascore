@@ -8,8 +8,6 @@ import score.annotation.Payable;
 import score.annotation.EventLog;
 
 import java.math.BigInteger;
-import java.util.Map;
-import java.util.List;
 
 /*
  * This contract allows admins to add claimable ICX amounts for users.
