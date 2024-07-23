@@ -47,21 +47,19 @@ public class Contract
         // Ensure only the owner can add admins
         Address caller = Context.getCaller();
 
-        if (caller.equals(Context.getOwner())) {
-            // check if the admin is already added
-            int size = admins.size();
-            for (int i = 0; i < size; i++) {
-                String adminAddress = admins.get(i).toString();
-                if (adminAddress.equals(admin.toString())) {
-                    Context.revert("Admin already added");
-                }
+        Context.require(caller.equals(Context.getOwner()), "Only the contract owner can add admins");
+
+        // check if the admin is already added
+        int size = admins.size();
+        for (int i = 0; i < size; i++) {
+            String adminAddress = admins.get(i).toString();
+            if (adminAddress.equals(admin.toString())) {
+                Context.revert("Admin already added");
             }
-            // Add the admin
-            admins.add(admin);
-            AdminAdded(admin);
-        } else {
-            Context.revert("Only the contract owner can add admins");
         }
+        // Add the admin
+        admins.add(admin);
+        AdminAdded(admin);
     }
 
     /*

@@ -4,6 +4,7 @@ import com.iconloop.score.test.Account;
 import com.iconloop.score.test.Score;
 import com.iconloop.score.test.ServiceManager;
 import com.iconloop.score.test.TestBase;
+import score.UserRevertedException;
 
 import score.UserRevertedException;
 import score.Address;
@@ -118,6 +119,13 @@ class ContractTest extends TestBase {
         
         // Check account balance return to 1000
         assertEquals(claimAmount, ownerBalancePost.subtract(ownerBalancePre));
+    }
+
+    @Test
+    void testOnlyOwnerCanAddAdmin() {
+        
+        // Throws error if method is called by non-owner
+        assertThrows(UserRevertedException.class, () -> contractInstance.invoke(accountInstance2, "addAdmin", accountInstance3.getAddress()));
     }
     
     @Test
