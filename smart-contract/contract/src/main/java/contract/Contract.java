@@ -4,6 +4,7 @@ import score.Address;
 import score.Context;
 import score.DictDB;
 import score.BranchDB;
+import score.VarDB;
 import score.annotation.External;
 import score.annotation.Payable;
 import score.annotation.EventLog;
@@ -20,7 +21,7 @@ public class Contract
     private static final String ADMINS = "admins";
     private static final String ICX_TOKEN = "ICX_TOKEN";
     private static final String BALN_TOKEN = "BALN_TOKEN";
-    // private static final IterableDictDB<Address, BigInteger> claims = new IterableDictDB<>(CLAIMS, BigInteger.class, Address.class, false);
+    private final VarDB<Address> balnContract = Context.newVarDB("balnContract", Address.class);
     private static final BranchDB<String, DictDB<Address, BigInteger>> claims = Context.newBranchDB(CLAIMS, BigInteger.class);
     private static final DictDB<Address, Boolean> admins = Context.newDictDB(ADMINS, Boolean.class);
 
@@ -41,6 +42,27 @@ public class Contract
 
         // Emit the AdminAdded event
         AdminAdded(ownerAddress);
+    }
+
+    /*
+     * Set the BALN contract address.
+     */
+    @External
+    public void setBALNContract(Address balnContractAddress) {
+        // Ensure only admins can add claims
+        Contract contractInstance = new Contract();
+        onlyAdmins(contractInstance);
+
+        // Set the BALN contract address
+        balnContract.set(balnContractAddress);
+    }
+
+    /*
+     * Get the BALN contract address.
+     */
+    @External(readonly=true)
+    public Address getBALNContract() {
+        return balnContract.get();
     }
 
     /*
@@ -134,9 +156,8 @@ public class Contract
         // Clear the claimable amount for the user
         claims.at(BALN_TOKEN).set(caller, BigInteger.ZERO);
 
-        // TODO
         // Transfer BALN token to caller
-        // Context.transfer(caller, claimAmount);
+        sendBalnToken(caller, claimAmount);
 
         // Emit the Claimed event
         Claimed(caller, claimAmount, BALN_TOKEN);
@@ -193,9 +214,8 @@ public class Contract
         Address caller = Context.getCaller();
         Address owner = Context.getOwner();
 
-        // TODO
         // Transfer BALN to contract owner
-        // Context.transfer(owner, amount);
+        sendBalnToken(owner, amount);
 
         // Emit the Claimed event
         OwnerClaimed(caller, amount, BALN_TOKEN);
@@ -221,6 +241,19 @@ public class Contract
     @External(readonly=true)
     public BigInteger getBALNClaimableAmount(Address user) {
         return claims.at(BALN_TOKEN).getOrDefault(user, BigInteger.ZERO);
+    }
+
+
+    /*
+     * Send BALN token to the user.
+     */
+    private void sendBalnToken(Address to, BigInteger amount) {
+        Address balnContractAddress = balnContract.getOrDefault(null);
+
+        Context.require(balnContractAddress != null, "BALN contract address is not set");
+
+        // Transfer BALN token to the user
+        Context.call(balnContractAddress, "transfer", to, amount);
     }
 
     /*
