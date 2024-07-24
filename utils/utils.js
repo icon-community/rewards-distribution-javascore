@@ -16,15 +16,23 @@ const WALLET = IconWallet.loadPrivateKey(config.wallet.privateKey);
 
 async function deployContract(
   jarContent,
+  contract = null,
   params = null,
   wallet = WALLET,
   // sl = 1000000000,
   sl = 13000000000,
 ) {
   try {
+    if (contract != null && config.contract.address == null) {
+      throw new Error("Contract address is not set in config");
+    }
     const txObj = new IconBuilder.DeployTransactionBuilder()
       .from(wallet.getAddress())
-      .to("cx0000000000000000000000000000000000000000")
+      .to(
+        contract == null
+          ? "cx0000000000000000000000000000000000000000"
+          : contract,
+      )
       .stepLimit(IconConverter.toHex(sl))
       .nid(config.default.nid)
       .nonce(IconConverter.toHex(1))
@@ -54,14 +62,22 @@ async function deployContract(
 async function getTxResult(txHash) {
   const maxLoops = 10;
   let loop = 0;
+  let txResult = null;
   while (loop < maxLoops) {
     try {
-      return await iconService.getTransactionResult(txHash).execute();
+      txResult = await iconService.getTransactionResult(txHash).execute();
+      return txResult;
     } catch (err) {
       void err;
       console.log(`Mining tx.. (pass ${loop + 1})`);
       loop++;
       await sleep(1000);
+      if (loop == maxLoops) {
+        console.log("Transaction failed");
+        console.log(err);
+        console.log(txResult);
+        throw new Error("Transaction failed");
+      }
     }
   }
 }

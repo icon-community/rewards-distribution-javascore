@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "deploy": "node scripts/deploy.js",
+    "update-contract": "node scripts/update-contract.js",
     "fund-contract": "node scripts/fund-contract.js",
     "add-rewards": "node scripts/add-rewards.js"
   },
