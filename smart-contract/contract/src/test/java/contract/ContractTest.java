@@ -53,13 +53,13 @@ class ContractTest extends TestBase {
     }
 
     @Test
-    void testAddClaimAndGetClaimableAmount() {
+    void testAddICXClaimAndGetClaimableAmount() {
         // Add claim amount to contract for account
         BigInteger claimAmount = BigInteger.valueOf(1000);
-        contractInstance.invoke(owner, "addClaim", accountInstance1.getAddress(), claimAmount);
+        contractInstance.invoke(owner, "addICXClaim", accountInstance1.getAddress(), claimAmount);
 
         // Get claimable amount for account
-        BigInteger claimable = (BigInteger) contractInstance.call("getClaimableAmount", accountInstance1.getAddress());
+        BigInteger claimable = (BigInteger) contractInstance.call("getICXClaimableAmount", accountInstance1.getAddress());
 
         // Check if claimable amount is equal to claim amount
         assertEquals(claimAmount, claimable);
@@ -68,13 +68,13 @@ class ContractTest extends TestBase {
     @Test
     void testClaim() {
         BigInteger claimAmount = BigInteger.valueOf(1000);
-        contractInstance.invoke(owner, "addClaim", accountInstance2.getAddress(), claimAmount);
+        contractInstance.invoke(owner, "addICXClaim", accountInstance2.getAddress(), claimAmount);
 
         // Claim the amount
-        contractInstance.invoke(accountInstance2, "claim");
+        contractInstance.invoke(accountInstance2, "claimICX");
 
         // Get claimable amount for account
-        BigInteger claimable = (BigInteger) contractInstance.call("getClaimableAmount", accountInstance2.getAddress());
+        BigInteger claimable = (BigInteger) contractInstance.call("getICXClaimableAmount", accountInstance2.getAddress());
 
         assertEquals(BigInteger.ZERO, claimable);
     }
@@ -88,7 +88,7 @@ class ContractTest extends TestBase {
         BigInteger claimAmount = BigInteger.valueOf(1000);
 
         // Admin claim the amount
-        contractInstance.invoke(owner, "adminClaim", claimAmount);
+        contractInstance.invoke(owner, "adminClaimICX", claimAmount);
 
         BigInteger ownerBalance = owner.getBalance();
 
@@ -112,7 +112,7 @@ class ContractTest extends TestBase {
         contractInstance.invoke(owner, "addAdmin", accountInstance3.getAddress());
 
         // Admin claim the amount
-        contractInstance.invoke(accountInstance3, "adminClaim", claimAmount);
+        contractInstance.invoke(accountInstance3, "adminClaimICX", claimAmount);
 
         // balance after claim
         BigInteger ownerBalancePost = owner.getBalance();
@@ -135,8 +135,8 @@ class ContractTest extends TestBase {
         contractInstance.invoke(owner, "addAdmin", accountInstance3.getAddress());
 
         // Check if account is admin
-        Boolean isAdmin = (Boolean) contractInstance.call("isAdmin", accountInstance3.getAddress());
+        String isAdmin = (String) contractInstance.call("isAdmin", accountInstance3.getAddress());
 
-        assertTrue(isAdmin,"List of admins should be higher than zero");
+        assertTrue(Boolean.parseBoolean(isAdmin),"List of admins should be higher than zero");
     }
 }

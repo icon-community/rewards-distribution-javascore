@@ -69,8 +69,8 @@ public class Contract
      * Check if address is admin
      */
     @External(readonly=true)
-    public Boolean isAdmin(Address account) {
-        return admins.getOrDefault(account, false);
+    public String isAdmin(Address account) {
+        return String.valueOf(admins.getOrDefault(account, false));
     }
 
     /*
@@ -122,9 +122,9 @@ public class Contract
     }
 
     @External
-    public void claimBALN(Address user) {
-        Address user = Context.getCaller();
-        BigInteger claimAmount = claims.at(BALN_TOKEN).getOrDefault(user, BigInteger.ZERO);
+    public void claimBALN() {
+        Address caller = Context.getCaller();
+        BigInteger claimAmount = claims.at(BALN_TOKEN).getOrDefault(caller, BigInteger.ZERO);
 
         // Ensure there is something to claim
         if (claimAmount.equals(BigInteger.ZERO)) {
@@ -132,34 +132,34 @@ public class Contract
         }
 
         // Clear the claimable amount for the user
-        claims.at(BALN_TOKEN).set(user, BigInteger.ZERO);
+        claims.at(BALN_TOKEN).set(caller, BigInteger.ZERO);
 
         // TODO
-        // Transfer BALN token to user
-        // Context.transfer(user, claimAmount);
+        // Transfer BALN token to caller
+        // Context.transfer(caller, claimAmount);
 
         // Emit the Claimed event
-        Claimed(user, claimAmount, BALN_TOKEN);
+        Claimed(caller, claimAmount, BALN_TOKEN);
     }
 
     @External
-    public void claimICX(Address user) {
-        Address user = Context.getCaller();
-        BigInteger claimAmount = claims.at(ICX_TOKEN).getOrDefault(user, BigInteger.ZERO);
+    public void claimICX() {
+        Address caller = Context.getCaller();
+        BigInteger claimAmount = claims.at(ICX_TOKEN).getOrDefault(caller, BigInteger.ZERO);
 
         // Ensure there is something to claim
         if (claimAmount.equals(BigInteger.ZERO)) {
             Context.revert("No ICX to claim");
         }
 
-        // Clear the claimable amount for the user
-        claims.at(ICX_TOKEN).set(user, BigInteger.ZERO);
+        // Clear the claimable amount for the caller
+        claims.at(ICX_TOKEN).set(caller, BigInteger.ZERO);
 
-        // Transfer ICX to the user
-        Context.transfer(user, claimAmount);
+        // Transfer ICX to the caller
+        Context.transfer(caller, claimAmount);
 
         // Emit the Claimed event
-        Claimed(user, claimAmount, ICX_TOKEN);
+        Claimed(caller, claimAmount, ICX_TOKEN);
     }
 
     /*
@@ -258,5 +258,5 @@ public class Contract
      * Event emitted when a claim is made by an admin.
      */
     @EventLog(indexed=3)
-    public void OwnerClaimed(Address owner, BigInteger amount, token) {}
+    public void OwnerClaimed(Address owner, BigInteger amount, String token) {}
 }
