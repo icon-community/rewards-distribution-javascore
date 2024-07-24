@@ -264,6 +264,13 @@ public class Contract
     }
 
     /*
+     * allows contract to receive tokens
+     */
+    @External
+    public void tokenFallback(Address _from, BigInteger _value, byte[] _data) {
+    }
+
+    /*
      * Event emitted when an admin is added.
      */
     @EventLog(indexed=1)

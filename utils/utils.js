@@ -108,6 +108,40 @@ async function sendIcx(to, amount, wallet = WALLET) {
   }
 }
 
+async function sendBALN(
+  amount,
+  to = config.default.token.BALN,
+  wallet = WALLET,
+) {
+  try {
+    const parsedAmount = Number(amount) * 10 ** 18;
+    const txObj = new IconBuilder.CallTransactionBuilder()
+      .from(wallet.getAddress())
+      .to(to)
+      .stepLimit(IconConverter.toHex(10000000000))
+      .nid(config.default.nid)
+      .nonce(IconConverter.toHex(1))
+      .version(IconConverter.toHex(3))
+      .timestamp(new Date().getTime() * 1000)
+      .method("transfer")
+      .params({
+        _to: config.contract.address,
+        _value: IconConverter.toHex(parsedAmount),
+      })
+      .build();
+
+    const signedTransaction = new SignedTransaction(txObj, wallet);
+    const txHash = await iconService
+      .sendTransaction(signedTransaction)
+      .execute();
+    return txHash;
+  } catch (err) {
+    const str = "Error sending BALN";
+    console.log(str);
+    console.log(err);
+    throw new Error(str);
+  }
+}
 async function addClaim(claim, wallet = WALLET) {
   try {
     const { address, amount } = claim;
@@ -149,5 +183,6 @@ module.exports = {
   sleep,
   getTxResult,
   sendIcx,
+  sendBALN,
   addClaim,
 };

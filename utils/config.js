@@ -1,4 +1,6 @@
 require("dotenv").config();
+const MAINNET = "mainnet";
+const LISBON = "lisbon";
 const config = {
   endpoint: {
     mainnet: {
@@ -17,19 +19,31 @@ const config = {
     path: "", // path to the smart contract
     address: process.env.CONTRACT_ADDRESS,
   },
+  token: {
+    BALN: {
+      [MAINNET]: "",
+      [LISBON]: "cxc3c552054ba6823107b56086134c2afc26ab1dfa",
+    },
+  },
 };
 
 const USE_NETWORK = process.env.NETWORK;
 
-if (USE_NETWORK === "mainnet") {
+if (USE_NETWORK === MAINNET) {
   config.default = {
-    url: config.endpoint.mainnet.url,
-    nid: config.endpoint.mainnet.nid,
+    url: config.endpoint[MAINNET].url,
+    nid: config.endpoint[MAINNET].nid,
+    token: {
+      BALN: config.token.BALN[MAINNET],
+    },
   };
-} else if (USE_NETWORK === "lisbon") {
+} else if (USE_NETWORK === LISBON) {
   config.default = {
-    url: config.endpoint.lisbon.url,
-    nid: config.endpoint.lisbon.nid,
+    url: config.endpoint[LISBON].url,
+    nid: config.endpoint[LISBON].nid,
+    token: {
+      BALN: config.token.BALN[LISBON],
+    },
   };
 } else {
   throw new Error("Invalid NETWORK");
