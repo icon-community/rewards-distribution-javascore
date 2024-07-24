@@ -62,14 +62,22 @@ async function deployContract(
 async function getTxResult(txHash) {
   const maxLoops = 10;
   let loop = 0;
+  let txResult = null;
   while (loop < maxLoops) {
     try {
-      return await iconService.getTransactionResult(txHash).execute();
+      txResult = await iconService.getTransactionResult(txHash).execute();
+      return txResult;
     } catch (err) {
       void err;
       console.log(`Mining tx.. (pass ${loop + 1})`);
       loop++;
       await sleep(1000);
+      if (loop == maxLoops) {
+        console.log("Transaction failed");
+        console.log(err);
+        console.log(txResult);
+        throw new Error("Transaction failed");
+      }
     }
   }
 }
