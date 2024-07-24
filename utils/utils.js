@@ -16,15 +16,23 @@ const WALLET = IconWallet.loadPrivateKey(config.wallet.privateKey);
 
 async function deployContract(
   jarContent,
+  contract = null,
   params = null,
   wallet = WALLET,
   // sl = 1000000000,
   sl = 13000000000,
 ) {
   try {
+    if (contract != null && config.contract.address == null) {
+      throw new Error("Contract address is not set in config");
+    }
     const txObj = new IconBuilder.DeployTransactionBuilder()
       .from(wallet.getAddress())
-      .to("cx0000000000000000000000000000000000000000")
+      .to(
+        contract == null
+          ? "cx0000000000000000000000000000000000000000"
+          : contract,
+      )
       .stepLimit(IconConverter.toHex(sl))
       .nid(config.default.nid)
       .nonce(IconConverter.toHex(1))

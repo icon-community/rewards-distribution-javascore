@@ -87,8 +87,7 @@ public class Contract
         onlyAdmins(contractInstance);
 
         // Update the claimable amount for the user
-        BigInteger currentAmount = claims.getOrDefault(user, BigInteger.ZERO);
-        claims.set(user, currentAmount.add(amount));
+        claims.set(user, amount);
         ClaimAdded(user, amount);
     }
 
