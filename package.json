@@ -9,8 +9,8 @@
     "setup-contract": "node scripts/setup-contract.js",
     "icx-fund-contract": "node scripts/icx-fund-contract.js",
     "baln-fund-contract": "node scripts/baln-fund-contract.js",
-    "icx-add-rewards": "node scripts/add-icx-rewards.js",
-    "baln-add-rewards": "node scripts/add-baln-rewards.js"
+    "add-icx-rewards": "node scripts/add-icx-rewards.js",
+    "add-baln-rewards": "node scripts/add-baln-rewards.js"
   },
   "keywords": [],
   "author": "fidelve",
