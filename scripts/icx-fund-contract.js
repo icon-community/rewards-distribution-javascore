@@ -15,7 +15,7 @@ async function main() {
     console.log("Transaction result:");
     console.log(txResult);
   } catch (err) {
-    console.log("Error running fund-contract script:");
+    console.log("Error running icx-fund-contract script:");
     console.log(err);
   }
 }
