@@ -405,6 +405,51 @@ Example transaction in the tracker:
 https://tracker.lisbon.icon.community/transaction/0xb9db1186bcbebfe78c1a8cc7f031ec69f826ef27cdfe611d4d14b1d3ad81d42d#events
 
 ## Contract management scripts.
+
+### Quick start
+The quick summary of the scripts is as follows:
+
+```
+# install
+git clone GIT_URL
+cd rewards-distribution-javascore
+npm install
+
+# setup environment file
+PRIVATE_KEY
+NETWORK
+CONTRACT_ADDRESS
+
+# deploy contract
+npm run deploy
+
+# Update the env file with the deployed contract address
+CONTRACT_ADDRESS="CONTRACT_ADDRESS"
+
+# setup contract
+npm run setup-contract
+
+# fund contract
+npm run icx-fund-contract
+npm run baln-fund-contract
+
+# Modify the users.json file with the list of users and rewards
+# [
+#   {
+#    "address": "hx0169...063",
+#    "amount": "10"
+#  },
+#  {
+#    "address": "hxf859...c62",
+#    "amount": "20"
+#  }
+# ]
+# add rewards
+npm run icx-add-rewards
+npm run baln-add-rewards
+```
+
+### Full setup description
 To execute the management scripts first clone the project and install the dependencies.
 
 ```bash
