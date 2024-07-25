@@ -55,6 +55,7 @@ public class Contract
 
         // Set the BALN contract address
         balnContract.set(balnContractAddress);
+        ContractAdded(balnContractAddress);
     }
 
     /*
@@ -275,6 +276,12 @@ public class Contract
      */
     @EventLog(indexed=1)
     public void AdminAdded(Address admin) {}
+
+    /*
+     * Event emitted when a contract is added.
+     */
+    @EventLog(indexed=1)
+    public void ContractAdded(Address contract) {}
 
     /*
      * Event emitted when an admin is Removed.

@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { addClaim, sleep, getTxResult } = require("../utils/utils");
+const { addBALNClaim, sleep, getTxResult } = require("../utils/utils");
 
 async function main() {
   try {
@@ -9,7 +9,7 @@ async function main() {
     for (const user of users) {
       console.log("Adding rewards to user:", user);
       // Add the rewards to the user
-      const txHash = await addClaim(user);
+      const txHash = await addBALNClaim(user);
       console.log("Transaction hash:", txHash);
       await sleep(4000);
       const txResult = await getTxResult(txHash);
@@ -17,7 +17,7 @@ async function main() {
       console.log(txResult);
     }
   } catch (err) {
-    console.log("Error running add-rewards.js");
+    console.log("Error running add-baln-rewards.js");
     console.log(err);
   }
 }

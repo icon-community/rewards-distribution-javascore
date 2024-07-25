@@ -6,9 +6,11 @@
   "scripts": {
     "deploy": "node scripts/deploy.js",
     "update-contract": "node scripts/update-contract.js",
+    "setup-contract": "node scripts/setup-contract.js",
     "icx-fund-contract": "node scripts/icx-fund-contract.js",
     "baln-fund-contract": "node scripts/baln-fund-contract.js",
-    "add-rewards": "node scripts/add-rewards.js"
+    "icx-add-rewards": "node scripts/add-icx-rewards.js",
+    "baln-add-rewards": "node scripts/add-baln-rewards.js"
   },
   "keywords": [],
   "author": "fidelve",

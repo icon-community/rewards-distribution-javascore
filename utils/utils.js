@@ -19,7 +19,6 @@ async function deployContract(
   contract = null,
   params = null,
   wallet = WALLET,
-  // sl = 1000000000,
   sl = 13000000000,
 ) {
   try {
@@ -108,33 +107,50 @@ async function sendIcx(to, amount, wallet = WALLET) {
   }
 }
 
-async function sendBALN(
-  amount,
-  to = config.default.token.BALN,
+async function callTransactionMethod(
+  to,
+  method,
+  params,
+  sl = 10000000000,
   wallet = WALLET,
 ) {
   try {
-    const parsedAmount = Number(amount) * 10 ** 18;
     const txObj = new IconBuilder.CallTransactionBuilder()
       .from(wallet.getAddress())
       .to(to)
-      .stepLimit(IconConverter.toHex(10000000000))
+      .stepLimit(IconConverter.toHex(sl))
       .nid(config.default.nid)
       .nonce(IconConverter.toHex(1))
       .version(IconConverter.toHex(3))
       .timestamp(new Date().getTime() * 1000)
-      .method("transfer")
-      .params({
-        _to: config.contract.address,
-        _value: IconConverter.toHex(parsedAmount),
-      })
-      .build();
+      .method(method);
 
-    const signedTransaction = new SignedTransaction(txObj, wallet);
+    if (params != null) {
+      txObj.params(params);
+    }
+
+    const txObj2 = txObj.build();
+    const signedTransaction = new SignedTransaction(txObj2, wallet);
     const txHash = await iconService
       .sendTransaction(signedTransaction)
       .execute();
     return txHash;
+  } catch (err) {
+    const str = "Error calling transaction method";
+    console.log(str);
+    console.log(err);
+    throw new Error(str);
+  }
+}
+async function sendBALN(amount, to = config.default.token.BALN) {
+  try {
+    const parsedAmount = Number(amount) * 10 ** 18;
+    const method = "transfer";
+    const params = {
+      _to: config.contract.address,
+      _value: IconConverter.toHex(parsedAmount),
+    };
+    return await callTransactionMethod(to, method, params);
   } catch (err) {
     const str = "Error sending BALN";
     console.log(str);
@@ -142,32 +158,57 @@ async function sendBALN(
     throw new Error(str);
   }
 }
-async function addClaim(claim, wallet = WALLET) {
+
+async function addClaim(claim, method) {
   try {
     const { address, amount } = claim;
     const parsedAmount = Number(amount) * 10 ** 18;
-    const txObj = new IconBuilder.CallTransactionBuilder()
-      .from(wallet.getAddress())
-      .to(config.contract.address)
-      .stepLimit(IconConverter.toHex(10000000000))
-      .nid(config.default.nid)
-      .nonce(IconConverter.toHex(1))
-      .version(IconConverter.toHex(3))
-      .timestamp(new Date().getTime() * 1000)
-      .method("addClaim")
-      .params({
-        user: address,
-        amount: IconConverter.toHex(parsedAmount),
-      })
-      .build();
-
-    const signedTransaction = new SignedTransaction(txObj, wallet);
-    const txHash = await iconService
-      .sendTransaction(signedTransaction)
-      .execute();
-    return txHash;
+    const to = config.contract.address;
+    const params = {
+      user: address,
+      amount: IconConverter.toHex(parsedAmount),
+    };
+    return await callTransactionMethod(to, method, params);
   } catch (err) {
     const str = "Error adding claims";
+    console.log(str);
+    console.log(err);
+    throw new Error(str);
+  }
+}
+
+async function addICXClaim(claim, wallet = WALLET) {
+  return addClaim(claim, "addICXClaim", wallet);
+}
+
+async function addBALNClaim(claim, wallet = WALLET) {
+  return addClaim(claim, "addBALNClaim", wallet);
+}
+
+async function setBALNContract() {
+  try {
+    const to = config.contract.address;
+    const params = {
+      balnContractAddress: config.default.token.BALN,
+    };
+    const method = "setBALNContract";
+    return await callTransactionMethod(to, method, params);
+  } catch (err) {
+    const str = "Error calling setBALNContract";
+    console.log(str);
+    console.log(err);
+    throw new Error(str);
+  }
+}
+
+async function getBALNContract() {
+  try {
+    const to = config.contract.address;
+    const method = "getBALNContract";
+    const call = new IconBuilder.CallBuilder().to(to).method(method).build();
+    return await iconService.call(call).execute();
+  } catch (err) {
+    const str = "Error calling getBALNContract";
     console.log(str);
     console.log(err);
     throw new Error(str);
@@ -185,4 +226,8 @@ module.exports = {
   sendIcx,
   sendBALN,
   addClaim,
+  addICXClaim,
+  addBALNClaim,
+  setBALNContract,
+  getBALNContract,
 };
