@@ -416,9 +416,9 @@ cd rewards-distribution-javascore
 npm install
 
 # setup environment file
-PRIVATE_KEY
-NETWORK
-CONTRACT_ADDRESS
+PRIVATE_KEY="YOUR_PRIVATE_KEY"
+NETWORK="mainnet" # or "lisbon"
+CONTRACT_ADDRESS="" # defined after deploying the contract
 
 # deploy contract
 npm run deploy
