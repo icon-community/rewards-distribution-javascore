@@ -296,7 +296,7 @@ public class Contract
     public static void onlyAdmins(Contract contractInstance) {
 
         Address caller = Context.getCaller();
-        Context.require(contractInstance.admins.getOrDefault(caller, false), "Only admins can execute this function");
+        Context.require(Contract.admins.getOrDefault(caller, false), "Only admins can execute this function");
     }
 
     /*
