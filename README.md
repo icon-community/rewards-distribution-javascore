@@ -1,539 +1,205 @@
-# rewards distribution javascore
-
-This repository contains the code for the rewards distribution smart contract (source code) and the scripts for deploying the contract, funding the contract and adding rewards to users.
-
-The smart contract allows for the distribution of rewards to a list of addresses.
-
-A list of admins can be defined and used to add the users and their rewards. By default the contract owner is an admin and only the contract owner can add other admins.
-
-## Contract methods.
-
-### getBALNContract
-Returns the list of admins.
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_call",
-  "params": {
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "getBALNContract"
-    }
-  }
-}
-```
-
-Response:
-```json
-{
-  "jsonrpc": "2.0",
-  "result": "cx0169...063",
-  "id": 1234
-}
-```
-
-### isAdmin
-Returns true if the address is an admin, false otherwise.
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_call",
-  "params": {
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "isAdmin",
-      "params": {
-        "account": "WALLET_ADDRESS"
-      }
-    }
-  }
-}
-```
-
-Response:
-```json
-{
-  "jsonrpc": "2.0",
-  "result": "true",
-  "id": 1234
-}
-```
-
-### getICXClaimableAmount
-Returns the claimable amount for the given address. The value returned is the amount of ICX in loop units as a hex string (1 ICX = 10^18 loop).
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_call",
-  "params": {
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "getICXClaimableAmount",
-      "params": {
-        "user": "WALLET_ADDRESS"
-      }
-    }
-  }
-}
-```
-
-Response:
-```json
-{
-  "jsonrpc": "2.0",
-  "result": "0x123a00",
-  "id": 1234
-}
-```
-
-### getBALNClaimableAmount
-Returns the claimable amount of BALN for the given address. The value returned is the amount of BALN in loop units as a hex string (1 BALN = 10^18 loop).
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_call",
-  "params": {
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "getBALNClaimableAmount",
-      "params": {
-        "user": "WALLET_ADDRESS"
-      }
-    }
-  }
-}
-```
-
-Response:
-```json
-{
-  "jsonrpc": "2.0",
-  "result": "0x123a00",
-  "id": 1234
-}
-```
-
-### setBALNContract
-Sets the address of the BALN token contract. Only the contract owner can set the address of the BALN token contract.
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_sendTransaction",
-  "params": {
-    "from": "WALLET_ADDRESS_SENDER",
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "setBALNContract",
-      "params": {
-        "balnContractAddress": "CONTRACT_ADDRESS"
-      }
-    }
-    ...
-  }
-}
-```
-
-Response:
-
-If the transaction is a success an event of type `ContractAdded(Address)` is emitted, if not the transaction will fail.
-
-Example transaction in the tracker:
-https://tracker.lisbon.icon.community/transaction/0x4007cfc8b56aef59fe09d18eb02484a046048c694ce43a5a4de32b90cda88b9e
-
-### addAdmin
-Adds an admin to the list of admins. Only the contract owner can add admins.
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_sendTransaction",
-  "params": {
-    "from": "WALLET_ADDRESS_SENDER",
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "addAdmin",
-      "params": {
-        "admin": "WALLET_ADDRESS_ADMIN"
-      }
-    }
-    ...
-  }
-}
-```
-
-Response:
-
-If the transaction is a success an event of type `AdminAdded(Address)` is emitted, if not the transaction will fail.
-
-Example transaction in the tracker:
-https://tracker.lisbon.icon.community/transaction/0x4a3820fe60d996de09f31a34ee67b86fd6215dc2c869545986c9ecd8bf7abff3#events
-
-### removeAdmin
-Removes an admin from the list of admins. Only the contract owner can remove admins.
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_sendTransaction",
-  "params": {
-    "from": "WALLET_ADDRESS_SENDER",
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "removeAdmin",
-      "params": {
-        "admin": "WALLET_ADDRESS_ADMIN"
-      }
-    }
-    ...
-  }
-}
-```
-
-Response:
-
-If the transaction is a success an event of type `AdminRemoved(Address)` is emitted, if not the transaction will fail.
-
-Example transaction in the tracker:
-https://tracker.lisbon.icon.community/transaction/0xccfa4f7cc0f8703e2eb65d34880c848200c5aa36c6a7152f4c450f471c96920f#events
-
-### addICXClaim
-Adds an ICX claim to the user. Only admins can add claims. The amount param is in loop units as a hex string (1 ICX = 10^18 loop) and the user param is the address of the user to add the claim.
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_sendTransaction",
-  "params": {
-    "from": "WALLET_ADDRESS_SENDER",
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "addICXClaim",
-      "params": {
-        "user": "WALLET_ADDRESS",
-        "amount": "0x1223aa00"
-      }
-    }
-    ...
-  }
-}
-```
-
-Response:
-
-If the transaction is a success an event of type `ClaimAdded(Address,int,str)` is emitted, if not the transaction will fail.
-
-Example transaction in the tracker:
-https://tracker.lisbon.icon.community/transaction/0xb46c91d011aede22bbd2cf0c669c3eb0f157916c9854a82b077026c7881e6f6f#events
-
-### addBALNClaim
-Adds an BALN claim to the user. Only admins can add claims. The amount param is in loop units as a hex string (1 BALN = 10^18 loop) and the user param is the address of the user to add the claim.
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_sendTransaction",
-  "params": {
-    "from": "WALLET_ADDRESS_SENDER",
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "addBALNClaim",
-      "params": {
-        "user": "WALLET_ADDRESS",
-        "amount": "0x1223aa00"
-      }
-    }
-    ...
-  }
-}
-```
-
-Response:
-
-If the transaction is a success an event of type `ClaimAdded(Address,int,str)` is emitted, if not the transaction will fail.
-
-Example transaction in the tracker:
-https://tracker.lisbon.icon.community/transaction/0x5c7aa31b8c75a7bd478c6cc757e8900327e35ac93e335081806927baa701b044#events
-
-### claimICX
-Claims the ICX rewards for the user. The amount is transferred to the user address. This transaction must be called by the user that wants to claim the rewards.
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_sendTransaction",
-  "params": {
-    "from": "WALLET_ADDRESS_SENDER",
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "claimICX"
-    }
-    ...
-  }
-}
-```
-
-Response:
-
-If the transaction is a success an event of type `Claimed(Address,int,str)` is emitted, if not the transaction will fail.
-
-Example transaction in the tracker:
-https://tracker.lisbon.icon.community/transaction/0x803366fd82e472c9559e88fbd4e361dba74c6c50e13ee362fd6ea111e2160413#events
-
-### claimBALN
-Claims the BALN rewards for the user. The amount is transferred to the user address. This transaction must be called by the user that wants to claim the rewards.
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_sendTransaction",
-  "params": {
-    "from": "WALLET_ADDRESS_SENDER",
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "claimBALN"
-    }
-    ...
-  }
-}
-```
-
-Response:
-
-If the transaction is a success an event of type `Claimed(Address,int,str)` is emitted, if not the transaction will fail.
-
-Example transaction in the tracker:
-https://tracker.lisbon.icon.community/transaction/0x943fcaf10149ccb7cc0cc602494f079c90112c7ddedf9e9096bfb3054bc20de6
-
-### adminClaimICX
-This function is used to recover the ICX balance of the contract. Any admin can call this function and the balance will be transferred to the contract owner address. The amount is in loop units as a hex string (1 ICX = 10^18 loop).
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_sendTransaction",
-  "params": {
-    "from": "WALLET_ADDRESS_SENDER",
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "adminClaimICX",
-      "params": {
-        "amount": "0x1223aa00"
-      }
-    }
-    ...
-  }
-}
-```
-
-Response:
-
-If the transaction is a success an event of type `OwnerClaimed(Address,int,str)` is emitted, if not the transaction will fail.
-
-Example transaction in the tracker:
-https://tracker.lisbon.icon.community/transaction/0x9012cb76f918613d37a0cd1b8ca9178a30072f2aec9f6399dc8f90e1835b5eab#events
-
-### adminClaimBALN
-This function is used to recover the BALN balance of the contract. Any admin can call this function and the balance will be transferred to the contract owner address. The amount is in loop units as a hex string (1 BALN = 10^18 loop).
-
-Request:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1234,
-  "method": "icx_sendTransaction",
-  "params": {
-    "from": "WALLET_ADDRESS_SENDER",
-    "to": "CONTRACT_ADDRESS",
-    "dataType": "call",
-    "data": {
-      "method": "adminClaimBALN",
-      "params": {
-        "amount": "0x1223aa00"
-      }
-    }
-    ...
-  }
-}
-```
-
-Response:
-
-If the transaction is a success an event of type `OwnerClaimed(Address,int,str)` is emitted, if not the transaction will fail.
-
-Example transaction in the tracker:
-https://tracker.lisbon.icon.community/transaction/0xb9db1186bcbebfe78c1a8cc7f031ec69f826ef27cdfe611d4d14b1d3ad81d42d#events
-
-## Contract management scripts.
-
-### Quick start
-The quick summary of the scripts is as follows:
-
-```
-# install
-git clone GIT_URL
+# Rewards Distribution Smart Contract
+
+A comprehensive smart contract for distributing multiple token types (ICX, BALN, BNUSD) to users on the ICON blockchain. This repository contains the smart contract source code and management scripts for deploying, funding, and distributing rewards.
+
+## 🚀 Features
+
+- **Multi-Token Support**: Distribute ICX, BALN, and BNUSD tokens
+- **Admin Management**: Secure admin system with role-based access control
+- **Batch Operations**: Efficiently add rewards to multiple users
+- **Automatic Claiming**: Users can claim their rewards directly
+- **Contract Recovery**: Admins can recover contract balances
+- **Event Logging**: Comprehensive event tracking for all operations
+
+## 📋 Table of Contents
+
+- [Smart Contract Methods](#smart-contract-methods)
+- [Quick Start](#quick-start)
+- [Installation & Setup](#installation--setup)
+- [Contract Management](#contract-management)
+- [Scripts Reference](#scripts-reference)
+- [Configuration](#configuration)
+- [Testing](#testing)
+
+## 🏗️ Smart Contract Methods
+
+### Query Methods (Read-Only)
+
+#### `getBALNContract()`
+Returns the BALN token contract address.
+
+#### `getBNUSDContract()`
+Returns the BNUSD token contract address.
+
+#### `isAdmin(Address account)`
+Returns `true` if the address is an admin, `false` otherwise.
+
+#### `getICXClaimableAmount(Address user)`
+Returns the claimable ICX amount for the given user (in loop units).
+
+#### `getBALNClaimableAmount(Address user)`
+Returns the claimable BALN amount for the given user (in loop units).
+
+#### `getBNUSDClaimableAmount(Address user)`
+Returns the claimable BNUSD amount for the given user (in loop units).
+
+### Transaction Methods
+
+#### `setBALNContract(Address balnContractAddress)`
+Sets the BALN token contract address. **Admin only.**
+
+#### `setBNUSDContract(Address bnusdContractAddress)`
+Sets the BNUSD token contract address. **Admin only.**
+
+#### `addAdmin(Address admin)`
+Adds an admin to the contract. **Contract owner only.**
+
+#### `removeAdmin(Address admin)`
+Removes an admin from the contract. **Contract owner only.**
+
+#### `addICXClaim(Address user, BigInteger amount)`
+Adds an ICX claim for a user. **Admin only.**
+
+#### `addBALNClaim(Address user, BigInteger amount)`
+Adds a BALN claim for a user. **Admin only.**
+
+#### `addBNUSDClaim(Address user, BigInteger amount)`
+Adds a BNUSD claim for a user. **Admin only.**
+
+#### `claimICX()`
+Claims ICX rewards for the caller.
+
+#### `claimBALN()`
+Claims BALN rewards for the caller.
+
+#### `claimBNUSD()`
+Claims BNUSD rewards for the caller.
+
+#### `adminClaimICX(BigInteger amount)`
+Recovers ICX from contract to owner. **Admin only.**
+
+#### `adminClaimBALN(BigInteger amount)`
+Recovers BALN from contract to owner. **Admin only.**
+
+#### `adminClaimBNUSD(BigInteger amount)`
+Recovers BNUSD from contract to owner. **Admin only.**
+
+## ⚡ Quick Start
+
+```bash
+# 1. Clone and install
+git clone <repository-url>
 cd rewards-distribution-javascore
 npm install
 
-# setup environment file
-PRIVATE_KEY="YOUR_PRIVATE_KEY"
-NETWORK="mainnet" # or "lisbon"
-CONTRACT_ADDRESS="" # defined after deploying the contract
+# 2. Set up environment
+cp .env.example .env
+# Edit .env with your private key and network
 
-# deploy contract
+# 3. Deploy contract
 npm run deploy
 
-# Update the env file with the deployed contract address
-CONTRACT_ADDRESS="CONTRACT_ADDRESS"
+# 4. Update .env with deployed contract address
 
-# setup contract
+# 5. Setup contracts (sets token addresses)
 npm run setup-contract
 
-# fund contract
+# 6. Fund the contract
 npm run icx-fund-contract
 npm run baln-fund-contract
+npm run bnusd-fund-contract
 
-# Modify the users.json file with the list of users and rewards
-# [
-#   {
-#    "address": "hx0169...063",
-#    "amount": "10"
-#  },
-#  {
-#    "address": "hxf859...c62",
-#    "amount": "20"
-#  }
-# ]
-# add rewards
-npm run icx-add-rewards
-npm run baln-add-rewards
+# 7. Add rewards to users
+npm run add-icx-rewards
+npm run add-baln-rewards
+npm run add-bnusd-rewards
 ```
 
-### Full setup description
-To execute the management scripts first clone the project and install the dependencies.
+## 🔧 Installation & Setup
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- Java 11 or higher
+- Gradle
+- ICON wallet with sufficient balance
+
+### Environment Configuration
+
+Create a `.env` file in the project root:
 
 ```bash
-git clone GIT_URL
-cd rewards-distribution-javascore
-npm install
+# Required: Your wallet private key
+PRIVATE_KEY="your_private_key_here"
+
+# Required: Network to deploy to
+NETWORK="mainnet"  # or "lisbon"
+
+# Required: Contract address (set after deployment)
+CONTRACT_ADDRESS=""
 ```
 
-### Set the environment variables
-Create a `.env` file in the root of the project with the following content:
+### Contract Compilation
 
 ```bash
-PRIVATE_KEY="YOUR_PRIVATE_KEY"
-NETWORK="mainnet" # or "lisbon"
-CONTRACT_ADDRESS="CONTRACT_ADDRESS" # defined after deploying the contract
-```
-A wallet with enough funds is required to deploy the contract. And once the contract is deployed you can fund the contract by sending ICX to the contract address.
+# Navigate to smart contract directory
+cd smart-contract
 
-### Deploy contract
-This script deploys the contract to the ICON network. The contract owner is the wallet address that deploys the contract.
-
-```bash
-npm run deploy
-```
-If there are errors running the deploy script, check that a valid private key wallet with enough funds is defined in the `.env` file as well as the correct network (200 ICX balance on the wallet should be enough to trigger the transaction, the cost of the deployment is probably around 10-30 ICX, it varies).
-
-You can also locally compile the contracts by running the following command inside the `./smart-contract` folder.
-
-```bash
+# Compile using Gradle
 ./gradlew clean build optimizedJar
+
+# Or use the provided Makefile
+make clean-build
 ```
 
-A Makefile is also provided to compile the contracts.
+## 🎯 Contract Management
 
-You need to have gradle installed in your system to compile the contracts.
-
-
-### Update contract.
-
-To update the contract you need to compile the contract and then run the update script.
+### Deployment
 
 ```bash
-npm run update-contract
+npm run deploy
 ```
 
-### Setup contract
+**Requirements:**
+- Valid private key in `.env`
+- Sufficient ICX balance (recommended: 200+ ICX)
+- Correct network configuration
 
-This script is used to setup the contract after deploying it. It setup the address of the BALN token contract for correctly handling the BALN rewards.
+### Contract Setup
 
 ```bash
 npm run setup-contract
 ```
 
-### Fund contract
-You can fund the contract directly with your wallet by sending ICX or BALN to the contract address, or you can use the following scripts to fund the contract.
+This script:
+- Sets the BALN token contract address
+- Sets the BNUSD token contract address
+- Validates the setup
 
+### Funding the Contract
+
+#### Fund with ICX
 ```bash
 npm run icx-fund-contract
+```
+
+#### Fund with BALN
+```bash
 npm run baln-fund-contract
 ```
 
-Before running the command you need to update the `FUND_AMOUNT` variable in the `icx-fund-contract.js` and `baln-fund-contract.js` files located in the `./scripts` folder at the root of the project, and add the contract address in the `CONTRACT_ADDRESS` variable of the `.env` file.
-
-```javascript
-// inside the icx-fund-contract.js file
-const FUND_AMOUNT = "100"; // 100 ICX
-```
-
+#### Fund with BNUSD
 ```bash
-# inside the .env file
-CONTRACT_ADDRESS="CONTRACT_ADDRESS"
+npm run bnusd-fund-contract
 ```
 
-### add user rewards
-The following commands can be used to batch send transactions that will add ICX or BALN rewards to different users.
+**Note:** Update the `FUND_AMOUNT` variable in the respective script files before running.
 
-```bash
-npm run icx-add-rewards
-npm run baln-add-rewards
-```
+### Adding Rewards
 
-Before running the script you need to update the `users.json` file  located in the `./data` folder at the root of the project, with the list of users and the amount of rewards to add.
+#### Prepare User Data
 
-The amounts are in ICX units if funding ICX rewards and in BALN units if funding BALN rewards.
+Edit `data/users.json`:
 
 ```json
 [
@@ -548,7 +214,125 @@ The amounts are in ICX units if funding ICX rewards and in BALN units if funding
 ]
 ```
 
-### add admins and recover contract balance
-The easiest way to add admins and recover the contract balance is to simply sign these transactions using the tracker UI for the contract.
+#### Add Rewards
 
-Login with your admin (or contract owner wallet) in the tracker, search for the contract address and then in the `Contract` tab you can call the `addAdmin` and `adminClaim` functions.
+```bash
+# Add ICX rewards
+npm run add-icx-rewards
+
+# Add BALN rewards  
+npm run add-baln-rewards
+
+# Add BNUSD rewards
+npm run add-bnusd-rewards
+```
+
+## 📜 Scripts Reference
+
+| Script | Description | Usage |
+|--------|-------------|-------|
+| `deploy` | Deploy the smart contract | `npm run deploy` |
+| `update-contract` | Update existing contract | `npm run update-contract` |
+| `setup-contract` | Configure token contracts | `npm run setup-contract` |
+| `icx-fund-contract` | Fund contract with ICX | `npm run icx-fund-contract` |
+| `baln-fund-contract` | Fund contract with BALN | `npm run baln-fund-contract` |
+| `bnusd-fund-contract` | Fund contract with BNUSD | `npm run bnusd-fund-contract` |
+| `add-icx-rewards` | Add ICX rewards to users | `npm run add-icx-rewards` |
+| `add-baln-rewards` | Add BALN rewards to users | `npm run add-baln-rewards` |
+| `add-bnusd-rewards` | Add BNUSD rewards to users | `npm run add-bnusd-rewards` |
+
+## ⚙️ Configuration
+
+### Token Addresses
+
+Token addresses are configured in `utils/config.js`:
+
+```javascript
+token: {
+  BALN: {
+    mainnet: "cxf61cd5a45dc9f91c15aa65831a30a90d59a09619",
+    lisbon: "cxc3c552054ba6823107b56086134c2afc26ab1dfa"
+  },
+  BNUSD: {
+    mainnet: "cxf61cd5a45dc9f91c15aa65831a30a90d59a09619", 
+    lisbon: "cx87f7f8ceaa054d46ba7343a2ecd21208e12913c6"
+  }
+}
+```
+
+### Network Configuration
+
+```javascript
+endpoint: {
+  mainnet: {
+    url: "ctz.solidwallet.io",
+    nid: 1
+  },
+  lisbon: {
+    url: "lisbon.net.solidwallet.io", 
+    nid: 2
+  }
+}
+```
+
+## 🧪 Testing
+
+### Run Tests
+
+```bash
+cd smart-contract
+./gradlew clean test
+```
+
+### Test Coverage
+
+The test suite covers:
+- ✅ ICX token functionality
+- ✅ BALN token functionality  
+- ✅ BNUSD token functionality
+- ✅ Admin management
+- ✅ Access control
+- ✅ Error handling
+- ✅ Edge cases
+
+## 🔐 Security Features
+
+- **Role-based Access Control**: Only admins can add claims
+- **Owner-only Admin Management**: Only contract owner can add/remove admins
+- **Input Validation**: All inputs are validated
+- **Event Logging**: All operations emit events for transparency
+- **Safe Math**: Uses BigInteger for precise calculations
+
+## 📊 Events
+
+The contract emits the following events:
+
+- `AdminAdded(Address admin)` - When an admin is added
+- `AdminRemoved(Address admin)` - When an admin is removed
+- `ContractAdded(Address contract)` - When a token contract is set
+- `ClaimAdded(Address user, BigInteger amount, String token)` - When a claim is added
+- `Claimed(Address user, BigInteger amount, String token)` - When a user claims rewards
+- `OwnerClaimed(Address owner, BigInteger amount, String token)` - When admin recovers funds
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the ISC License.
+
+## 🆘 Support
+
+For issues and questions:
+- Check the [Issues](../../issues) page
+- Review the test files for usage examples
+- Consult the ICON documentation
+
+---
+
+**Note:** Always test on the Lisbon testnet before deploying to mainnet. Ensure you have sufficient balance for deployment and operations.

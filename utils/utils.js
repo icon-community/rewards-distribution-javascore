@@ -142,6 +142,7 @@ async function callTransactionMethod(
     throw new Error(str);
   }
 }
+
 async function sendBALN(amount, to = config.default.token.BALN) {
   try {
     const parsedAmount = Number(amount) * 10 ** 18;
@@ -215,6 +216,57 @@ async function getBALNContract() {
   }
 }
 
+async function sendBNUSD(amount, to = config.default.token.BNUSD) {
+  try {
+    const parsedAmount = Number(amount) * 10 ** 18;
+    const method = "transfer";
+    const params = {
+      _to: config.contract.address,
+      _value: IconConverter.toHex(parsedAmount),
+    };
+    return await callTransactionMethod(to, method, params);
+  } catch (err) {
+    const str = "Error sending BNUSD";
+    console.log(str);
+    console.log(err);
+    throw new Error(str);
+  }
+}
+
+async function addBNUSDClaim(claim, wallet = WALLET) {
+  return addClaim(claim, "addBNUSDClaim", wallet);
+}
+
+async function setBNUSDContract() {
+  try {
+    const to = config.contract.address;
+    const params = {
+      bnusdContractAddress: config.default.token.BNUSD,
+    };
+    const method = "setBNUSDContract";
+    return await callTransactionMethod(to, method, params);
+  } catch (err) {
+    const str = "Error calling setBNUSDContract";
+    console.log(str);
+    console.log(err);
+    throw new Error(str);
+  }
+}
+
+async function getBNUSDContract() {
+  try {
+    const to = config.contract.address;
+    const method = "getBNUSDContract";
+    const call = new IconBuilder.CallBuilder().to(to).method(method).build();
+    return await iconService.call(call).execute();
+  } catch (err) {
+    const str = "Error calling getBNUSDContract";
+    console.log(str);
+    console.log(err);
+    throw new Error(str);
+  }
+}
+
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -230,4 +282,8 @@ module.exports = {
   addBALNClaim,
   setBALNContract,
   getBALNContract,
+  sendBNUSD,
+  addBNUSDClaim,
+  setBNUSDContract,
+  getBNUSDContract,
 };

@@ -186,4 +186,125 @@ class ContractTest extends TestBase {
         // Throws error if method is called by non-owner
         assertThrows(UserRevertedException.class, () -> contractInstance.invoke(accountInstance2, "adminClaimBALN", claimAmount));
     }
+
+    @Test
+    void testAddBNUSDClaimAndGetClaimableAmount() {
+        // Add claim amount to contract for account
+        BigInteger claimAmount = BigInteger.valueOf(1000);
+        contractInstance.invoke(owner, "addBNUSDClaim", accountInstance1.getAddress(), claimAmount);
+
+        // Get claimable amount for account
+        BigInteger claimable = (BigInteger) contractInstance.call("getBNUSDClaimableAmount", accountInstance1.getAddress());
+
+        // Check if claimable amount is equal to claim amount
+        assertEquals(claimAmount, claimable);
+    }
+
+    @Test
+    void testClaimBNUSD() {
+        BigInteger claimAmount = BigInteger.valueOf(1000);
+        contractInstance.invoke(owner, "addBNUSDClaim", accountInstance2.getAddress(), claimAmount);
+
+        // set BNUSD contract address
+        contractInstance.invoke(owner, "setBNUSDContract", tokenContractInstance.getAddress());
+
+        // Claim the amount
+        contractInstance.invoke(accountInstance2, "claimBNUSD");
+
+        // Get claimable amount for account
+        BigInteger claimable = (BigInteger) contractInstance.call("getBNUSDClaimableAmount", accountInstance2.getAddress());
+
+        assertEquals(BigInteger.ZERO, claimable);
+    }
+
+    @Test
+    void testClaimBNUSDWithoutContractSet() throws Exception {
+        // Create a fresh contract instance for this test
+        Score freshContract = sm.deploy(owner, Contract.class);
+        
+        BigInteger claimAmount = BigInteger.valueOf(1000);
+        freshContract.invoke(owner, "addBNUSDClaim", accountInstance2.getAddress(), claimAmount);
+
+        // Should throw error when BNUSD contract is not set
+        assertThrows(UserRevertedException.class, () -> freshContract.invoke(accountInstance2, "claimBNUSD"));
+    }
+
+    @Test
+    void testClaimBNUSDWithNoClaim() throws Exception {
+        // Create a fresh contract instance for this test
+        Score freshContract = sm.deploy(owner, Contract.class);
+        
+        // set BNUSD contract address
+        freshContract.invoke(owner, "setBNUSDContract", tokenContractInstance.getAddress());
+
+        // Should throw error when there's nothing to claim
+        assertThrows(UserRevertedException.class, () -> freshContract.invoke(accountInstance2, "claimBNUSD"));
+    }
+
+    @Test
+    void testAdminClaimBNUSD() {
+        // Add claim amount to contract for account
+        BigInteger claimAmount = BigInteger.valueOf(1000);
+
+        // set BNUSD contract address
+        contractInstance.invoke(owner, "setBNUSDContract", tokenContractInstance.getAddress());
+
+        // Admin claim the amount
+        contractInstance.invoke(owner, "adminClaimBNUSD", claimAmount);
+
+        // If the assert is true, the test is successful
+        assertEquals(true, true);
+    }
+
+    @Test
+    void testAdminClaimBNUSDByNewAdmin() {
+        // Add claim amount to contract for account
+        BigInteger claimAmount = BigInteger.valueOf(1000);
+        
+        // create new admin account
+        contractInstance.invoke(owner, "addAdmin", accountInstance3.getAddress());
+
+        // set BNUSD contract address
+        contractInstance.invoke(owner, "setBNUSDContract", tokenContractInstance.getAddress());
+
+        // Admin claim the amount
+        contractInstance.invoke(accountInstance3, "adminClaimBNUSD", claimAmount);
+
+        // If the assert is true, the test is successful
+        assertEquals(true, true);
+    }
+
+    @Test
+    void testOnlyAdminCanClaimBNUSD() {
+        // Add claim amount to contract for account
+        BigInteger claimAmount = BigInteger.valueOf(1000);
+        
+        // Throws error if method is called by non-admin
+        assertThrows(UserRevertedException.class, () -> contractInstance.invoke(accountInstance2, "adminClaimBNUSD", claimAmount));
+    }
+
+    @Test
+    void testSetBNUSDContract() {
+        // Set BNUSD contract address
+        contractInstance.invoke(owner, "setBNUSDContract", tokenContractInstance.getAddress());
+
+        // Get BNUSD contract address
+        Address bnusdContractAddress = (Address) contractInstance.call("getBNUSDContract");
+
+        assertEquals(tokenContractInstance.getAddress(), bnusdContractAddress);
+    }
+
+    @Test
+    void testOnlyAdminCanSetBNUSDContract() {
+        // Throws error if method is called by non-admin
+        assertThrows(UserRevertedException.class, () -> contractInstance.invoke(accountInstance2, "setBNUSDContract", tokenContractInstance.getAddress()));
+    }
+
+    @Test
+    void testGetBNUSDClaimableAmountForNewUser() {
+        // Get claimable amount for new user (should be zero)
+        BigInteger claimable = (BigInteger) contractInstance.call("getBNUSDClaimableAmount", accountInstance1.getAddress());
+
+        assertEquals(BigInteger.ZERO, claimable);
+    }
 }

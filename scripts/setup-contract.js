@@ -2,6 +2,8 @@ const fs = require("fs");
 const {
   getBALNContract,
   setBALNContract,
+  getBNUSDContract,
+  setBNUSDContract,
   sleep,
   getTxResult,
 } = require("../utils/utils");
@@ -27,6 +29,25 @@ async function main() {
     }
 
     console.log("BALN contract set successfully");
+
+    console.log("Setting BNUSD contract...");
+    const bnusdTx = await setBNUSDContract();
+    sleep(5000);
+    const bnusdTxResult = await getTxResult(bnusdTx);
+
+    if (bnusdTxResult.status !== 1) {
+      console.log(bnusdTxResult);
+      throw new Error("Error setting BNUSD contract");
+    }
+
+    const bnusdContract = await getBNUSDContract();
+
+    console.log("BNUSD contract: ", bnusdContract);
+    if (bnusdContract !== config.default.token.BNUSD) {
+      throw new Error("Error setting BNUSD contract");
+    }
+
+    console.log("BNUSD contract set successfully");
   } catch (err) {
     console.log("Error running setup-contract.js");
     console.log(err);
