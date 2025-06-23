@@ -21,7 +21,9 @@ public class Contract
     private static final String ADMINS = "admins";
     private static final String ICX_TOKEN = "ICX_TOKEN";
     private static final String BALN_TOKEN = "BALN_TOKEN";
+    private static final String BNUSD_TOKEN = "BNUSD_TOKEN";
     private final VarDB<Address> balnContract = Context.newVarDB("balnContract", Address.class);
+    private final VarDB<Address> bnusdContract = Context.newVarDB("bnusdContract", Address.class);
     private static final BranchDB<String, DictDB<Address, BigInteger>> claims = Context.newBranchDB(CLAIMS, BigInteger.class);
     private static final DictDB<Address, Boolean> admins = Context.newDictDB(ADMINS, Boolean.class);
 
@@ -64,6 +66,28 @@ public class Contract
     @External(readonly=true)
     public Address getBALNContract() {
         return balnContract.get();
+    }
+
+    /*
+     * Set the BNUSD contract address.
+     */
+    @External
+    public void setBNUSDContract(Address bnusdContractAddress) {
+        // Ensure only admins can add claims
+        Contract contractInstance = new Contract();
+        onlyAdmins(contractInstance);
+
+        // Set the BNUSD contract address
+        bnusdContract.set(bnusdContractAddress);
+        ContractAdded(bnusdContractAddress);
+    }
+
+    /*
+     * Get the BNUSD contract address.
+     */
+    @External(readonly=true)
+    public Address getBNUSDContract() {
+        return bnusdContract.get();
     }
 
     /*
@@ -144,6 +168,14 @@ public class Contract
         _addClaim(user, amount, BALN_TOKEN);
     }
 
+    /*
+     * Add a claimable BNUSD amount for a user.
+     */
+    @External
+    public void addBNUSDClaim(Address user, BigInteger amount) {
+        _addClaim(user, amount, BNUSD_TOKEN);
+    }
+
     @External
     public void claimBALN() {
         Address caller = Context.getCaller();
@@ -162,6 +194,26 @@ public class Contract
 
         // Emit the Claimed event
         Claimed(caller, claimAmount, BALN_TOKEN);
+    }
+
+    @External
+    public void claimBNUSD() {
+        Address caller = Context.getCaller();
+        BigInteger claimAmount = claims.at(BNUSD_TOKEN).getOrDefault(caller, BigInteger.ZERO);
+
+        // Ensure there is something to claim
+        if (claimAmount.equals(BigInteger.ZERO)) {
+            Context.revert("No BNUSD to claim");
+        }
+
+        // Clear the claimable amount for the user
+        claims.at(BNUSD_TOKEN).set(caller, BigInteger.ZERO);
+
+        // Transfer BNUSD token to caller
+        sendBnusdToken(caller, claimAmount);
+
+        // Emit the Claimed event
+        Claimed(caller, claimAmount, BNUSD_TOKEN);
     }
 
     @External
@@ -222,6 +274,25 @@ public class Contract
         OwnerClaimed(caller, amount, BALN_TOKEN);
     }
 
+    /*
+     * Claim BNUSD amount by an admin.
+     */
+    @External
+    public void adminClaimBNUSD(BigInteger amount) {
+        // Ensure only admins can claim
+        Contract contractInstance = new Contract();
+        onlyAdmins(contractInstance);
+
+        Address caller = Context.getCaller();
+        Address owner = Context.getOwner();
+
+        // Transfer BNUSD to contract owner
+        sendBnusdToken(owner, amount);
+
+        // Emit the Claimed event
+        OwnerClaimed(caller, amount, BNUSD_TOKEN);
+    }
+
     public static void onlyAdmins(Contract contractInstance) {
 
         Address caller = Context.getCaller();
@@ -244,6 +315,13 @@ public class Contract
         return claims.at(BALN_TOKEN).getOrDefault(user, BigInteger.ZERO);
     }
 
+    /*
+     * Return the claimable BNUSD amount for a user.
+     */
+    @External(readonly=true)
+    public BigInteger getBNUSDClaimableAmount(Address user) {
+        return claims.at(BNUSD_TOKEN).getOrDefault(user, BigInteger.ZERO);
+    }
 
     /*
      * Send BALN token to the user.
@@ -255,6 +333,18 @@ public class Contract
 
         // Transfer BALN token to the user
         Context.call(balnContractAddress, "transfer", to, amount);
+    }
+
+    /*
+     * Send BNUSD token to the user.
+     */
+    private void sendBnusdToken(Address to, BigInteger amount) {
+        Address bnusdContractAddress = bnusdContract.getOrDefault(null);
+
+        Context.require(bnusdContractAddress != null, "BNUSD contract address is not set");
+
+        // Transfer BNUSD token to the user
+        Context.call(bnusdContractAddress, "transfer", to, amount);
     }
 
     /*
