@@ -169,7 +169,7 @@ async function addClaim(claim, method) {
       user: address,
       amount: IconConverter.toHex(parsedAmount),
     };
-    return await callTransactionMethod(to, method, params);
+    return await callTransactionMethod(to, method, params, 100000000);
   } catch (err) {
     const str = "Error adding claims";
     console.log(str);
